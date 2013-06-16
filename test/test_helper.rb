@@ -9,7 +9,7 @@ class Rails
 end
 
 def test_path(glob)
-  File.join(Rails.root, 'test', glob)
+  File.expand_path File.join(Rails.root, 'test', glob)
 end
 
 require 'active_support/concern'
@@ -45,7 +45,7 @@ end
 
 def force_fixture_generation
   begin
-    FileUtils.rm(File.expand_path("../../tmp/fixture_builder.yml", __FILE__))
+    FileUtils.rm_rf(File.expand_path("../../tmp/fixture_builder", __FILE__))
   rescue
   end
 end

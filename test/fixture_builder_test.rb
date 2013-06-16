@@ -35,7 +35,7 @@ class FixtureBuilderTest < Test::Unit::TestCase
         @king_of_gnomes = MagicalCreature.create(:name => 'robert', :species => 'gnome')
       end
     end
-    generated_fixture = YAML.load(File.open(test_path("fixtures/magical_creatures.yml")))
+    generated_fixture = YAML.load(File.open(test_path("fixtures/root/magical_creatures.yml")))
     assert_equal 'king_of_gnomes', generated_fixture.keys.first
   end
 
@@ -53,6 +53,23 @@ class FixtureBuilderTest < Test::Unit::TestCase
   end
 
   def test_fixtures_dir
-    assert_match /test\/fixtures$/, FixtureBuilder.configuration.send(:fixtures_dir).to_s
+    assert_match /test\/fixtures\/root$/, FixtureBuilder.configuration.send(:fixtures_dir).to_s
+  end
+
+  def test_scenario
+    create_and_blow_away_old_db
+    force_fixture_generation
+
+    FixtureBuilder.configure do |fbuilder|
+      fbuilder.files_to_check += Dir[test_path("*.rb")]
+      fbuilder.factory do
+
+        fbuilder.scenario("goblintown") do
+          @king_of_gnomes = MagicalCreature.create(:name => 'robert', :species => 'gnome')
+        end
+      end
+    end
+    generated_fixture = YAML.load(File.open(test_path("fixtures/goblintown/magical_creatures.yml")))
+    assert_equal 'king_of_gnomes', generated_fixture.keys.first
   end
 end

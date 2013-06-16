@@ -2,6 +2,10 @@ pkg/
 .pairs
 .idea/*
 *.db
-tmp/fixture_builder.yml
+tmp
 test/fixtures/magical_creatures.yml
 Gemfile.lock
+tags
+gems.tags
+test/fixtures/*
+

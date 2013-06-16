@@ -15,7 +15,10 @@ module FixtureBuilder
 
     def initialize(opts={})
       @namer = Namer.new(self)
+      @scenario_name = opts[:scenario] || 'root'
       @file_hashes = file_hashes
+      @scenarios = []
+      FileUtils.mkdir_p( File.expand_path(File.join(::Rails.root, spec_or_test_dir, 'fixtures', @scenario_name)))
     end
 
     def include(*args)
@@ -28,8 +31,11 @@ module FixtureBuilder
 
     def factory(&block)
       self.files_to_check += @legacy_fixtures.to_a
+
+      puts "attempting factory for #{@scenario_name}" 
       return unless rebuild_fixtures?
       @builder = Builder.new(self, @namer, block).generate!
+      puts "writing config for #{@scenario_name}" 
       write_config
     end
 
@@ -67,7 +73,7 @@ module FixtureBuilder
     end
 
     def fixture_builder_file
-      @fixture_builder_file ||= ::Rails.root.join('tmp', 'fixture_builder.yml')
+      @fixture_builder_file ||= ::Rails.root.join('tmp', 'fixture_builder', "#{@scenario_name}.yml")
     end
 
     def name_model_with(model_class, &block)
@@ -79,7 +85,15 @@ module FixtureBuilder
     end
 
     def fixtures_dir(path = '')
-      File.expand_path(File.join(::Rails.root, spec_or_test_dir, 'fixtures', path))
+      File.expand_path(File.join(::Rails.root, spec_or_test_dir, 'fixtures', @scenario_name, path))
+    end
+
+    def scenario(name, &blk)
+      scenario_builder = FixtureBuilder::Configuration.new(scenario: name)
+      scenario_builder.files_to_check = @files_to_check
+      puts "factory for #{name}"
+      scenario_builder.factory(&blk)
+      @scenarios << scenario_builder 
     end
 
     private
